@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | HabitForge</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #080808;
+            color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 250px;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #0d0d0d;
+            border-right: 1px solid #292929;
+            padding: 25px 15px;
+            z-index: 1000;
+        }
+
+        .brand {
+            color: #d4af37;
+            font-size: 25px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .nav-link {
+            color: #999;
+            padding: 13px 15px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            transition: .2s;
+            text-decoration: none;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #19150a;
+            color: #d4af37;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+        }
+
+        /* MAIN */
+
+        .main {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome {
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        .gold {
+            color: #d4af37;
+        }
+
+        .subtitle {
+            color: #888;
+        }
+
+        .user-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #d4af37;
+            color: #080808;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            font-size: 18px;
+        }
+
+        /* CARDS */
+
+        .card-box {
+            background: #101010;
+            border: 1px solid #292929;
+            border-radius: 16px;
+            padding: 22px;
+            height: 100%;
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: #19150a;
+            color: #d4af37;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .stat-number {
+            font-size: 30px;
+            font-weight: 900;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* PROGRESS */
+
+        .progress {
+            height: 9px;
+            background: #292929;
+        }
+
+        .progress-bar {
+            background: #d4af37;
+        }
+
+        /* HABITS */
+
+        .habit-row {
+            padding: 15px 0;
+            border-bottom: 1px solid #252525;
+        }
+
+        .habit-row:last-child {
+            border-bottom: none;
+        }
+
+        .habit-name {
+            font-weight: 700;
+        }
+
+        .habit-meta {
+            color: #777;
+            font-size: 12px;
+        }
+
+        .complete-btn {
+            border: 1px solid #d4af37;
+            background: transparent;
+            color: #d4af37;
+            border-radius: 8px;
+            padding: 6px 11px;
+        }
+
+        .complete-btn:hover {
+            background: #d4af37;
+            color: #080808;
+        }
+
+        .completed {
+            color: #777;
+            text-decoration: line-through;
+        }
+
+        .edit-btn {
+            border: 1px solid #4caf50;
+            background: transparent;
+            color: #4caf50;
+            border-radius: 8px;
+            padding: 6px 11px;
+        }
+
+        .edit-btn:hover {
+            background: #4caf50;
+            color: #080808;
+        }
+
+        .delete-btn {
+            border: 1px solid #dc3545;
+            background: transparent;
+            color: #dc3545;
+            border-radius: 8px;
+            padding: 6px 11px;
+        }
+
+        .delete-btn:hover {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        /* BUTTON */
+
+        .btn-gold {
+            background: #d4af37;
+            color: #080808;
+            border: none;
+            font-weight: 800;
+            border-radius: 9px;
+            padding: 10px 17px;
+        }
+
+        .btn-gold:hover {
+            background: #e4c354;
+            color: #080808;
+        }
+
+        /* QUICK ACTIONS */
+
+        .quick-action {
+            display: block;
+            padding: 15px;
+            background: #171717;
+            border: 1px solid #292929;
+            border-radius: 11px;
+            color: #ddd;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+
+        .quick-action:hover {
+            border-color: #d4af37;
+            color: #d4af37;
+        }
+
+        .quick-action i {
+            color: #d4af37;
+            margin-right: 10px;
+        }
+
+        /* MODAL */
+
+        .modal-content {
+            background: #101010;
+            color: #fff;
+            border: 1px solid #333;
+            border-radius: 16px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #292929;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #292929;
+        }
+
+        .form-control,
+        .form-select {
+            background: #181818;
+            border: 1px solid #333;
+            color: #fff;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: #181818;
+            color: #fff;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 .2rem rgba(212,175,55,.12);
+        }
+
+        .form-select option {
+            background: #181818;
+        }
+
+        .form-label {
+            color: #bbb;
+            font-weight: 600;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        /* HELP */
+
+        .help-option {
+            display: block;
+            width: 100%;
+            border: 1px solid #333;
+            background: #171717;
+            color: #ddd;
+            border-radius: 10px;
+            padding: 13px;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .help-option:hover {
+            border-color: #d4af37;
+            color: #d4af37;
+        }
+
+        .help-option i {
+            color: #d4af37;
+            margin-right: 10px;
+        }
+
+        /* EMPTY */
+
+        .empty-state {
+            text-align: center;
+            padding: 35px 10px;
+            color: #777;
+        }
+
+        .empty-state i {
+            font-size: 35px;
+            color: #d4af37;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* MOBILE */
+
+        @media(max-width: 800px) {
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                min-height: auto;
+                padding: 15px;
+            }
+
+            .brand {
+                margin-bottom: 15px;
+            }
+
+            .nav-link {
+                display: inline-block;
+                margin-right: 4px;
+                padding: 9px 10px;
+                font-size: 13px;
+            }
+
+            .nav-link i {
+                margin-right: 5px;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+
+            .welcome {
+                font-size: 24px;
+            }
+
+            .user-box {
+                display: none;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+    <div class="brand">
+        <i class="bi bi-lightning-charge-fill"></i>
+        HabitForge
+    </div>
+
+    <a href="index.html" class="nav-link active">
+        <i class="bi bi-grid"></i>
+        Dashboard
+    </a>
+
+    <a href="habits.html" class="nav-link">
+        <i class="bi bi-check2-square"></i>
+        My Habits
+    </a>
+
+    <a href="goals.html" class="nav-link">
+        <i class="bi bi-bullseye"></i>
+        Goals
+    </a>
+
+    <a href="tracking.html" class="nav-link">
+        <i class="bi bi-bar-chart"></i>
+        Tracking
+    </a>
+
+    <a href="calendar.html" class="nav-link">
+        <i class="bi bi-calendar3"></i>
+        Calendar
+    </a>
+
+    <a href="profile.html" class="nav-link">
+        <i class="bi bi-person"></i>
+        Profile
+    </a>
+
+    <a href="#" class="nav-link" id="helpBtn">
+        <i class="bi bi-question-circle"></i>
+        Help
+    </a>
+
+    <a href="#" class="nav-link" id="logoutBtn">
+        <i class="bi bi-box-arrow-right"></i>
+        Logout
+    </a>
+
+</div>
+
+
+<!-- MAIN -->
+
+<div class="main">
+
+    <div class="topbar">
+
+        <div>
+            <div class="welcome">
+                Welcome, <span class="gold" id="userName">User</span>
+            </div>
+
+            <div class="subtitle">
+                Stay consistent. Build your future.
+            </div>
+        </div>
+
+        <div class="user-box">
+
+            <div>
+                <div id="topEmail" class="fw-bold"></div>
+                <div class="subtitle">HabitForge Member</div>
+            </div>
+
+            <div class="avatar" id="avatar">
+                U
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- STAT CARDS -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+
+            <div class="card-box">
+
+                <div class="stat-icon">
+                    <i class="bi bi-list-check"></i>
+                </div>
+
+                <div class="stat-number" id="totalHabits">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    Total Habits
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card-box">
+
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+
+                <div class="stat-number" id="completedToday">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    Completed Today
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card-box">
+
+                <div class="stat-icon">
+                    <i class="bi bi-fire"></i>
+                </div>
+
+                <div class="stat-number" id="currentStreak">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    Current Streak
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card-box">
+
+                <div class="stat-icon">
+                    <i class="bi bi-speedometer2"></i>
+                </div>
+
+                <div class="stat-number" id="todayProgress">
+                    0%
+                </div>
+
+                <div class="stat-label">
+                    Today's Progress
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="row g-4">
+
+        <!-- TODAY'S HABITS -->
+
+        <div class="col-lg-8">
+
+            <div class="card-box">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <div>
+                        <h5 class="mb-1">
+                            Today's Habits
+                        </h5>
+
+                        <div class="subtitle">
+                            Complete your daily tasks.
+                        </div>
+                    </div>
+
+                    <button
+                        class="btn btn-gold"
+                        data-bs-toggle="modal"
+                        data-bs-target="#habitModal"
+                        id="addHabitButton"
+                    >
+                        <i class="bi bi-plus-lg"></i>
+                        Add Habit
+                    </button>
+
+                </div>
+
+                <div id="habitList"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- QUICK ACTIONS -->
+
+        <div class="col-lg-4">
+
+            <div class="card-box">
+
+                <h5 class="mb-3">
+                    Quick Actions
+                </h5>
+
+                <a href="habits.html" class="quick-action">
+                    <i class="bi bi-check2-square"></i>
+                    Manage Habits
+                </a>
+
+                <a href="goals.html" class="quick-action">
+                    <i class="bi bi-bullseye"></i>
+                    Manage Goals
+                </a>
+
+                <a href="tracking.html" class="quick-action">
+                    <i class="bi bi-graph-up"></i>
+                    View Analytics
+                </a>
+
+                <a href="calendar.html" class="quick-action">
+                    <i class="bi bi-calendar3"></i>
+                    Open Calendar
+                </a>
+
+                <a href="profile.html" class="quick-action">
+                    <i class="bi bi-person"></i>
+                    Account Settings
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- PROGRESS -->
+
+    <div class="row g-4 mt-1">
+
+        <div class="col-lg-7">
+
+            <div class="card-box">
+
+                <h5 class="mb-3">
+                    Today's Overall Progress
+                </h5>
+
+                <div class="d-flex justify-content-between mb-2">
+
+                    <span class="subtitle">
+                        Completion
+                    </span>
+
+                    <span class="gold" id="progressText">
+                        0%
+                    </span>
+
+                </div>
+
+                <div class="progress">
+
+                    <div
+                        class="progress-bar"
+                        id="progressBar"
+                        style="width:0%"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-lg-5">
+
+            <div class="card-box">
+
+                <h5 class="mb-3">
+                    Recent Activity
+                </h5>
+
+                <div id="recentActivity">
+
+                    <div class="subtitle">
+                        Loading activity...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ADD / EDIT HABIT MODAL -->
+
+<div
+    class="modal fade"
+    id="habitModal"
+    tabindex="-1"
+>
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title" id="modalTitle">
+                    Add New Habit
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <form id="habitForm">
+
+                    <input
+                        type="hidden"
+                        id="habitId"
+                    >
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Habit Name
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="habitName"
+                            placeholder="Example: Exercise"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Category
+                        </label>
+
+                        <select
+                            class="form-select"
+                            id="habitCategory"
+                        >
+                            <option value="Health">
+                                Health
+                            </option>
+
+                            <option value="Study">
+                                Study
+                            </option>
+
+                            <option value="Fitness">
+                                Fitness
+                            </option>
+
+                            <option value="Personal">
+                                Personal
+                            </option>
+
+                            <option value="Work">
+                                Work
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Frequency
+                        </label>
+
+                        <select
+                            class="form-select"
+                            id="habitFrequency"
+                        >
+                            <option value="Daily">
+                                Daily
+                            </option>
+
+                            <option value="Weekly">
+                                Weekly
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div
+                        id="habitMessage"
+                        class="subtitle"
+                    ></div>
+
+                </form>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-gold"
+                    id="saveHabitBtn"
+                >
+                    Save Habit
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- HELP MODAL -->
+
+<div
+    class="modal fade"
+    id="helpModal"
+    tabindex="-1"
+>
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title">
+                        HabitForge Help Center
+                    </h5>
+
+                    <small class="subtitle">
+                        Send your query directly.
+                    </small>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Name
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="helpName"
+                    >
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        class="form-control"
+                        id="helpEmail"
+                    >
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Query
+                    </label>
+
+                    <textarea
+                        class="form-control"
+                        id="helpQuery"
+                        rows="4"
+                        placeholder="Describe your problem..."
+                    ></textarea>
+
+                </div>
+
+                <div
+                    id="helpMessage"
+                    class="subtitle mb-2"
+                ></div>
+
+                <button
+                    class="help-option"
+                    id="whatsappBtn"
+                >
+                    <i class="bi bi-whatsapp"></i>
+                    Contact through WhatsApp
+                </button>
+
+                <button
+                    class="help-option"
+                    id="smsBtn"
+                >
+                    <i class="bi bi-chat-left-text"></i>
+                    Send through SMS
+                </button>
+
+                <button
+                    class="help-option"
+                    id="telegramBtn"
+                >
+                    <i class="bi bi-telegram"></i>
+                    Send through Telegram
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+<script src="session.js"></script>
+
+<script>
+
+    const API = "https://habitforge-server-k8gd.onrender.com";
+
+    const user =
+        JSON.parse(
+            localStorage.getItem("habitforgeUser")
+        );
+
+    if (!user || !user._id) {
+
+        window.location.href = "login.html";
+    }
+
+    let habits = [];
+
+    const today = getToday();
+
+    /* USER */
+
+    const displayName =
+        user.name ||
+        user.fullName ||
+        "User";
+
+    document.getElementById("userName")
+        .textContent = displayName;
+
+    document.getElementById("topEmail")
+        .textContent = user.email || "";
+
+    document.getElementById("avatar")
+        .textContent =
+        displayName.charAt(0).toUpperCase();
+
+
+    /* DATE */
+
+    function getToday() {
+
+        const date = new Date();
+
+        const year =
+            date.getFullYear();
+
+        const month =
+            String(date.getMonth() + 1)
+                .padStart(2, "0");
+
+        const day =
+            String(date.getDate())
+                .padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+    }
+
+
+    /* LOAD HABITS */
+
+    async function loadHabits() {
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API}/api/habits?userId=${user._id}`
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Unable to load habits"
+                );
+            }
+
+            habits =
+                await response.json();
+
+            if (!Array.isArray(habits)) {
+                habits = [];
+            }
+
+            renderDashboard();
+
+        } catch (error) {
+
+            console.error(error);
+
+            document.getElementById("habitList")
+                .innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-exclamation-circle"></i>
+                        Unable to load habits.
+                        <br>
+                        Make sure the server is running.
+                    </div>
+                `;
+        }
+    }
+
+
+    /* DASHBOARD */
+
+    function renderDashboard() {
+
+        const total =
+            habits.length;
+
+        const completed =
+            habits.filter(habit => {
+
+                const dates =
+                    Array.isArray(
+                        habit.completedDates
+                    )
+                    ? habit.completedDates
+                    : [];
+
+                return dates.includes(today);
+
+            }).length;
+
+        const progress =
+            total > 0
+            ? Math.round(
+                (completed / total) * 100
+            )
+            : 0;
+
+        document.getElementById("totalHabits")
+            .textContent = total;
+
+        document.getElementById("completedToday")
+            .textContent = completed;
+
+        document.getElementById("todayProgress")
+            .textContent = progress + "%";
+
+        document.getElementById("progressText")
+            .textContent = progress + "%";
+
+        document.getElementById("progressBar")
+            .style.width = progress + "%";
+
+        calculateStreak();
+
+        renderHabits();
+
+        renderRecentActivity();
+    }
+
+
+    /* HABIT LIST */
+
+    function renderHabits() {
+
+        const container =
+            document.getElementById("habitList");
+
+        if (!habits.length) {
+
+            container.innerHTML = `
+                <div class="empty-state">
+
+                    <i class="bi bi-check2-square"></i>
+
+                    No habits added yet.
+
+                    <br>
+
+                    <button
+                        class="btn btn-gold mt-3"
+                        data-bs-toggle="modal"
+                        data-bs-target="#habitModal"
+                    >
+                        <i class="bi bi-plus-lg"></i>
+                        Add Your First Habit
+                    </button>
+
+                </div>
+            `;
+
+            return;
+        }
+
+        container.innerHTML = "";
+
+        habits.forEach(habit => {
+
+            const dates =
+                Array.isArray(
+                    habit.completedDates
+                )
+                ? habit.completedDates
+                : [];
+
+            const completed =
+                dates.includes(today);
+
+            const row =
+                document.createElement("div");
+
+            row.className =
+                "habit-row";
+
+            row.innerHTML = `
+
+                <div class="d-flex justify-content-between align-items-center gap-3">
+
+                    <div class="flex-grow-1">
+
+                        <div class="
+                            habit-name
+                            ${completed ? "completed" : ""}
+                        ">
+
+                            ${escapeHTML(
+                                habit.name ||
+                                habit.habitName ||
+                                "Unnamed Habit"
+                            )}
+
+                        </div>
+
+                        <div class="habit-meta">
+
+                            ${escapeHTML(
+                                habit.category ||
+                                "General"
+                            )}
+
+                            &nbsp; • &nbsp;
+
+                            ${escapeHTML(
+                                habit.frequency ||
+                                "Daily"
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex gap-2">
+
+                        <button
+                            class="complete-btn"
+                            onclick="toggleComplete('${habit._id}', ${completed})"
+                            title="${completed ? "Undo completion" : "Complete habit"}"
+                        >
+                            <i class="bi ${
+                                completed
+                                ? "bi-check-circle-fill"
+                                : "bi-check-circle"
+                            }"></i>
+                        </button>
+
+                        <button
+                            class="edit-btn"
+                            onclick="editHabit('${habit._id}')"
+                        >
+                            <i class="bi bi-pencil"></i>
+                        </button>
+
+                        <button
+                            class="delete-btn"
+                            onclick="deleteHabit('${habit._id}')"
+                        >
+                            <i class="bi bi-trash"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+
+            container.appendChild(row);
+        });
+    }
+
+
+    /* ADD / EDIT */
+
+    document.getElementById("saveHabitBtn")
+        .addEventListener(
+            "click",
+            saveHabit
+        );
+
+
+    async function saveHabit() {
+
+        const name =
+            document.getElementById("habitName")
+                .value
+                .trim();
+
+        const category =
+            document.getElementById("habitCategory")
+                .value;
+
+        const frequency =
+            document.getElementById("habitFrequency")
+                .value;
+
+        const id =
+            document.getElementById("habitId")
+                .value;
+
+        const message =
+            document.getElementById("habitMessage");
+
+        if (!name) {
+
+            message.textContent =
+                "Please enter a habit name.";
+
+            message.style.color =
+                "#ff8585";
+
+            return;
+        }
+
+        try {
+
+            let response;
+
+            if (id) {
+
+                response =
+                    await fetch(
+                        `${API}/api/habits/${id}`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                userId: user._id,
+                                name,
+                                category,
+                                frequency
+                            })
+                        }
+                    );
+
+            } else {
+
+                response =
+                    await fetch(
+                        `${API}/api/habits`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                userId: user._id,
+                                name,
+                                category,
+                                frequency
+                            })
+                        }
+                    );
+            }
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message ||
+                    "Unable to save habit."
+                );
+            }
+
+            bootstrap.Modal
+                .getInstance(
+                    document.getElementById(
+                        "habitModal"
+                    )
+                )
+                .hide();
+
+            resetHabitForm();
+
+            await loadHabits();
+
+        } catch (error) {
+
+            message.textContent =
+                error.message;
+
+            message.style.color =
+                "#ff8585";
+        }
+    }
+
+
+    /* EDIT */
+
+    function editHabit(id) {
+
+        const habit =
+            habits.find(
+                item => item._id === id
+            );
+
+        if (!habit) {
+            return;
+        }
+
+        document.getElementById("modalTitle")
+            .textContent =
+            "Edit Habit";
+
+        document.getElementById("habitId")
+            .value =
+            habit._id;
+
+        document.getElementById("habitName")
+            .value =
+            habit.name ||
+            habit.habitName ||
+            "";
+
+        document.getElementById("habitCategory")
+            .value =
+            habit.category ||
+            "Other";
+
+        document.getElementById("habitFrequency")
+            .value =
+            habit.frequency ||
+            "Daily";
+
+        document.getElementById("habitMessage")
+            .textContent = "";
+
+        new bootstrap.Modal(
+            document.getElementById(
+                "habitModal"
+            )
+        ).show();
+    }
+
+
+    /* RESET MODAL */
+
+    document.getElementById("addHabitButton")
+        .addEventListener(
+            "click",
+            resetHabitForm
+        );
+
+
+    function resetHabitForm() {
+
+        document.getElementById("modalTitle")
+            .textContent =
+            "Add New Habit";
+
+        document.getElementById("habitId")
+            .value = "";
+
+        document.getElementById("habitName")
+            .value = "";
+
+        document.getElementById("habitCategory")
+            .value = "Health";
+
+        document.getElementById("habitFrequency")
+            .value = "Daily";
+
+        document.getElementById("habitMessage")
+            .textContent = "";
+    }
+
+
+    /* COMPLETE */
+
+    async function toggleComplete(id, completed) {
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API}/api/habits/${id}/complete`,
+                    {
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            userId: user._id,
+                            completed: !completed
+                        })
+                    }
+                );
+
+            if (!response.ok) {
+
+                const data =
+                    await response.json();
+
+                throw new Error(
+                    data.message ||
+                    "Unable to update habit."
+                );
+            }
+
+            await loadHabits();
+
+        } catch (error) {
+
+            alert(error.message);
+        }
+    }
+
+
+    /* DELETE */
+
+    async function deleteHabit(id) {
+
+        const confirmDelete =
+            confirm(
+                "Are you sure you want to delete this habit?"
+            );
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    `${API}/api/habits/${id}?userId=${user._id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+            if (!response.ok) {
+
+                const data =
+                    await response.json();
+
+                throw new Error(
+                    data.message ||
+                    "Unable to delete habit."
+                );
+            }
+
+            await loadHabits();
+
+        } catch (error) {
+
+            alert(error.message);
+        }
+    }
+
+
+    /* STREAK */
+
+    function calculateStreak() {
+
+        if (!habits.length) {
+
+            document.getElementById(
+                "currentStreak"
+            ).textContent = "0";
+
+            return;
+        }
+
+        const allDates = new Set();
+
+        habits.forEach(habit => {
+
+            if (
+                Array.isArray(
+                    habit.completedDates
+                )
+            ) {
+
+                habit.completedDates.forEach(
+                    date => allDates.add(date)
+                );
+            }
+        });
+
+        let streak = 0;
+
+        const date =
+            new Date();
+
+        while (true) {
+
+            const key =
+                getDateKey(date);
+
+            if (!allDates.has(key)) {
+                break;
+            }
+
+            streak++;
+
+            date.setDate(
+                date.getDate() - 1
+            );
+        }
+
+        document.getElementById(
+            "currentStreak"
+        ).textContent = streak;
+    }
+
+
+    function getDateKey(date) {
+
+        return `${date.getFullYear()}-${
+            String(date.getMonth() + 1)
+                .padStart(2, "0")
+        }-${
+            String(date.getDate())
+                .padStart(2, "0")
+        }`;
+    }
+
+
+    /* ACTIVITY */
+
+    function renderRecentActivity() {
+
+        const container =
+            document.getElementById(
+                "recentActivity"
+            );
+
+        const activities = [];
+
+        habits.forEach(habit => {
+
+            const dates =
+                Array.isArray(
+                    habit.completedDates
+                )
+                ? habit.completedDates
+                : [];
+
+            dates.slice(-3).forEach(
+                date => {
+
+                    activities.push({
+                        habit:
+                            habit.name ||
+                            habit.habitName ||
+                            "Habit",
+
+                        date
+                    });
+
+                }
+            );
+        });
+
+        activities.sort(
+            (a, b) =>
+                b.date.localeCompare(a.date)
+        );
+
+        const recent =
+            activities.slice(0, 5);
+
+        if (!recent.length) {
+
+            container.innerHTML = `
+                <div class="subtitle">
+                    No completed habits yet.
+                </div>
+            `;
+
+            return;
+        }
+
+        container.innerHTML =
+            recent.map(item => `
+                <div class="habit-row">
+
+                    <div class="fw-bold">
+                        <i class="bi bi-check-circle gold"></i>
+                        ${escapeHTML(item.habit)}
+                    </div>
+
+                    <div class="habit-meta">
+                        Completed on ${item.date}
+                    </div>
+
+                </div>
+            `).join("");
+    }
+
+
+    /* HELP */
+
+    const helpModal =
+        new bootstrap.Modal(
+            document.getElementById(
+                "helpModal"
+            )
+        );
+
+
+    document.getElementById("helpBtn")
+        .addEventListener(
+            "click",
+            event => {
+
+                event.preventDefault();
+
+                document.getElementById("helpName")
+                    .value =
+                    displayName;
+
+                document.getElementById("helpEmail")
+                    .value =
+                    user.email || "";
+
+                document.getElementById("helpQuery")
+                    .value = "";
+
+                document.getElementById("helpMessage")
+                    .textContent = "";
+
+                helpModal.show();
+            }
+        );
+
+
+    function getHelpMessage() {
+
+        const name =
+            document.getElementById("helpName")
+                .value
+                .trim();
+
+        const email =
+            document.getElementById("helpEmail")
+                .value
+                .trim();
+
+        const query =
+            document.getElementById("helpQuery")
+                .value
+                .trim();
+
+        if (!name || !email || !query) {
+
+            document.getElementById(
+                "helpMessage"
+            ).textContent =
+                "Please fill in Name, Email and Query.";
+
+            document.getElementById(
+                "helpMessage"
+            ).style.color =
+                "#ff8585";
+
+            return null;
+        }
+
+        return `HabitForge Support Query
+
+Name: ${name}
+Email: ${email}
+
+Query:
+${query}`;
+    }
+
+
+    /*
+       IMPORTANT:
+       Replace the placeholder number
+       with the actual support number later.
+    */
+
+    const supportNumber =
+        "918780530102";
+
+
+    document.getElementById("whatsappBtn")
+        .addEventListener(
+            "click",
+            () => {
+
+                const text =
+                    getHelpMessage();
+
+                if (!text) {
+                    return;
+                }
+
+                const encoded =
+                    encodeURIComponent(text);
+
+                window.open(
+                    `https://wa.me/${supportNumber}?text=${encoded}`,
+                    "_blank"
+                );
+            }
+        );
+
+
+    document.getElementById("smsBtn")
+        .addEventListener(
+            "click",
+            () => {
+
+                const text =
+                    getHelpMessage();
+
+                if (!text) {
+                    return;
+                }
+
+                const encoded =
+                    encodeURIComponent(text);
+
+                window.location.href =
+                    `sms:+${supportNumber}?body=${encoded}`;
+            }
+        );
+
+
+    document.getElementById("telegramBtn")
+        .addEventListener(
+            "click",
+            () => {
+
+                const text =
+                    getHelpMessage();
+
+                if (!text) {
+                    return;
+                }
+
+                const encoded =
+                    encodeURIComponent(text);
+
+                window.open(
+                    `https://t.me/vanshcloud?text=${encoded}`,
+                    "_blank"
+                );
+            }
+        );
+
+
+    /* ESCAPE HTML */
+
+    function escapeHTML(value) {
+
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+
+    /* LOGOUT */
+
+    document.getElementById("logoutBtn")
+        .addEventListener(
+            "click",
+            event => {
+
+                event.preventDefault();
+
+                localStorage.removeItem(
+                    "habitforgeUser"
+                );
+
+                localStorage.removeItem(
+                    "habitforgeLastActivity"
+                );
+
+                window.location.href =
+                    "login.html";
+            }
+        );
+
+
+    /* START */
+
+    loadHabits();
+
+</script>
+
+</body>
+</html>

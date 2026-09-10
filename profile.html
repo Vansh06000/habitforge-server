@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HabitForge - Profile</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background: #080808;
+    color: white;
+    min-height: 100vh;
+}
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 240px;
+    height: 100vh;
+    background: #0d0d0d;
+    border-right: 1px solid #2b2413;
+    padding: 25px 18px;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.logo h1 {
+    color: #d4af37;
+    font-size: 27px;
+}
+
+.logo p {
+    color: #777;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #aaa;
+    padding: 13px 15px;
+    border-radius: 8px;
+    display: block;
+    font-size: 14px;
+}
+
+.nav a:hover,
+.nav a.active {
+    background: #19150b;
+    color: #d4af37;
+}
+
+.logout {
+    position: absolute;
+    bottom: 25px;
+    left: 18px;
+    right: 18px;
+}
+
+.logout a {
+    text-decoration: none;
+    color: #999;
+    padding: 13px 15px;
+    display: block;
+}
+
+.main {
+    margin-left: 240px;
+    padding: 40px;
+    max-width: 1000px;
+}
+
+.page-title {
+    margin-bottom: 30px;
+}
+
+.page-title h2 {
+    font-size: 28px;
+}
+
+.page-title p {
+    color: #777;
+    margin-top: 7px;
+    font-size: 14px;
+}
+
+.gold-line {
+    width: 45px;
+    height: 3px;
+    background: #d4af37;
+    margin-top: 10px;
+}
+
+.card {
+    background: #101010;
+    border: 1px solid #29230f;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 22px;
+}
+
+.card h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: #d4af37;
+    color: #080808;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.profile-name {
+    font-size: 20px;
+}
+
+.profile-email {
+    color: #777;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.info-row {
+    border-top: 1px solid #222;
+    padding: 15px 0;
+}
+
+.info-label {
+    color: #777;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    color: #ddd;
+    font-size: 14px;
+}
+
+.form-group {
+    margin-bottom: 17px;
+}
+
+label {
+    display: block;
+    color: #aaa;
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    background: #191919;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 7px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #d4af37;
+}
+
+.gold-btn {
+    background: #d4af37;
+    border: none;
+    color: #080808;
+    padding: 11px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.gold-btn:hover {
+    background: #f0cf55;
+}
+
+.danger-card {
+    border-color: #442020;
+}
+
+.danger-card h2 {
+    color: #e57373;
+}
+
+.delete-btn {
+    background: transparent;
+    border: 1px solid #a33;
+    color: #e57373;
+    padding: 11px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: #8b3030;
+    color: white;
+}
+
+.message {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #d4af37;
+}
+
+.back-btn {
+    display: inline-block;
+    margin-bottom: 25px;
+    color: #aaa;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.back-btn:hover {
+    color: #d4af37;
+}
+
+@media(max-width:700px) {
+
+    .sidebar {
+        position: fixed;
+        width: 100%;
+        height: auto;
+        bottom: 0;
+        top: auto;
+        padding: 8px;
+        border-right: none;
+        border-top: 1px solid #29230f;
+        z-index: 1000;
+    }
+
+    .logo,
+    .logout {
+        display: none;
+    }
+
+    .nav {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    .nav a {
+        padding: 10px 5px;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    .nav a:nth-child(n+6) {
+        display: none;
+    }
+
+    .main {
+        margin-left: 0;
+        padding: 25px 15px 90px;
+    }
+
+    .page-title h2 {
+        font-size: 23px;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <h1>HabitForge</h1>
+
+        <p>BUILD BETTER HABITS</p>
+
+    </div>
+
+
+    <nav class="nav">
+
+        <a href="index.html">
+            Dashboard
+        </a>
+
+        <a href="#">
+            My Habits
+        </a>
+
+        <a href="#">
+            Goals
+        </a>
+
+        <a href="#">
+            Tracking
+        </a>
+
+        <a href="#">
+            Calendar
+        </a>
+
+        <a href="profile.html" class="active">
+            Profile
+        </a>
+
+        <a href="#" onclick="alert('Help Center coming soon.')">
+            Help
+        </a>
+
+    </nav>
+
+
+    <div class="logout">
+
+        <a href="#" onclick="logout()">
+            Logout
+        </a>
+
+    </div>
+
+</aside>
+
+
+
+<main class="main">
+
+    <a href="index.html" class="back-btn">
+        ← Back to Dashboard
+    </a>
+
+
+    <div class="page-title">
+
+        <h2>
+            Profile & Settings
+        </h2>
+
+        <p>
+            Manage your HabitForge account and security.
+        </p>
+
+        <div class="gold-line"></div>
+
+    </div>
+
+
+
+    <!-- PROFILE -->
+
+    <section class="card">
+
+        <h2>
+            Account Information
+        </h2>
+
+
+        <div class="profile-header">
+
+            <div
+                class="avatar"
+                id="avatar"
+            >
+                U
+            </div>
+
+
+            <div>
+
+                <div
+                    class="profile-name"
+                    id="profileName"
+                >
+                    User
+                </div>
+
+                <div
+                    class="profile-email"
+                    id="profileEmail"
+                >
+                    user@email.com
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="info-label">
+                Full Name
+            </div>
+
+            <div
+                class="info-value"
+                id="infoName"
+            >
+                -
+            </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="info-label">
+                Email Address
+            </div>
+
+            <div
+                class="info-value"
+                id="infoEmail"
+            >
+                -
+            </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+            <div class="info-label">
+                Account Created
+            </div>
+
+            <div
+                class="info-value"
+                id="infoCreated"
+            >
+                -
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- CHANGE PASSWORD -->
+
+    <section class="card">
+
+        <h2>
+            Change Password
+        </h2>
+
+
+        <div class="form-group">
+
+            <label>
+                Current Password
+            </label>
+
+            <input
+                type="password"
+                id="currentPassword"
+                placeholder="Enter current password"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                New Password
+            </label>
+
+            <input
+                type="password"
+                id="newPassword"
+                placeholder="Enter new password"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Confirm New Password
+            </label>
+
+            <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Confirm new password"
+            >
+
+        </div>
+
+
+        <button
+            class="gold-btn"
+            onclick="changePassword()"
+        >
+            Change Password
+        </button>
+
+
+        <div
+            class="message"
+            id="passwordMessage"
+        ></div>
+
+    </section>
+
+
+
+    <!-- DELETE ACCOUNT -->
+
+    <section class="card danger-card">
+
+        <h2>
+            Delete Account
+        </h2>
+
+
+        <p style="
+            color:#888;
+            font-size:13px;
+            line-height:1.6;
+            margin-bottom:18px;
+        ">
+
+            Permanently delete your HabitForge account
+            and all habits associated with it.
+
+        </p>
+
+
+        <button
+            class="delete-btn"
+            onclick="deleteAccount()"
+        >
+            Delete My Account
+        </button>
+
+    </section>
+
+</main>
+
+
+
+<script>
+
+const API_URL =
+    "https://habitforge-server-k8gd.onrender.com";
+
+
+const savedUser =
+    localStorage.getItem("habitforgeUser");
+
+
+if (!savedUser) {
+
+    window.location.href =
+        "login.html";
+
+}
+
+
+const currentUser =
+    JSON.parse(savedUser);
+
+
+
+async function loadProfile() {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/profile/${currentUser.id}`
+            );
+
+
+        const user =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                user.message ||
+                "Unable to load profile."
+            );
+
+            return;
+        }
+
+
+        document.getElementById("profileName")
+            .textContent =
+            user.name;
+
+
+        document.getElementById("profileEmail")
+            .textContent =
+            user.email;
+
+
+        document.getElementById("infoName")
+            .textContent =
+            user.name;
+
+
+        document.getElementById("infoEmail")
+            .textContent =
+            user.email;
+
+
+        document.getElementById("avatar")
+            .textContent =
+            user.name
+                .charAt(0)
+                .toUpperCase();
+
+
+        if (user.createdAt) {
+
+            document.getElementById("infoCreated")
+                .textContent =
+                new Date(
+                    user.createdAt
+                ).toLocaleDateString();
+
+        }
+
+    } catch (error) {
+
+        console.log(error);
+
+        alert(
+            "Unable to connect to server."
+        );
+
+    }
+
+}
+
+
+
+async function changePassword() {
+
+    const currentPassword =
+        document.getElementById(
+            "currentPassword"
+        ).value;
+
+
+    const newPassword =
+        document.getElementById(
+            "newPassword"
+        ).value;
+
+
+    const confirmPassword =
+        document.getElementById(
+            "confirmPassword"
+        ).value;
+
+
+    const message =
+        document.getElementById(
+            "passwordMessage"
+        );
+
+
+    message.textContent = "";
+
+
+    if (!currentPassword ||
+        !newPassword ||
+        !confirmPassword) {
+
+        message.textContent =
+            "Please fill in all password fields.";
+
+        return;
+
+    }
+
+
+    if (newPassword.length < 6) {
+
+        message.textContent =
+            "New password must contain at least 6 characters.";
+
+        return;
+
+    }
+
+
+    if (newPassword !== confirmPassword) {
+
+        message.textContent =
+            "New passwords do not match.";
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/profile/change-password`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        userId:
+                            currentUser.id,
+
+                        currentPassword:
+                            currentPassword,
+
+                        newPassword:
+                            newPassword
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            message.textContent =
+                data.message;
+
+            return;
+
+        }
+
+
+        message.textContent =
+            "Password changed successfully.";
+
+
+        document.getElementById(
+            "currentPassword"
+        ).value = "";
+
+
+        document.getElementById(
+            "newPassword"
+        ).value = "";
+
+
+        document.getElementById(
+            "confirmPassword"
+        ).value = "";
+
+
+    } catch (error) {
+
+        console.log(error);
+
+        message.textContent =
+            "Unable to connect to server.";
+
+    }
+
+}
+
+
+
+async function deleteAccount() {
+
+    const confirmation =
+        confirm(
+            "WARNING: This will permanently delete your account and all your habits. Continue?"
+        );
+
+
+    if (!confirmation) {
+        return;
+    }
+
+
+    const secondConfirmation =
+        prompt(
+            "Type DELETE to permanently delete your account."
+        );
+
+
+    if (secondConfirmation !== "DELETE") {
+
+        alert(
+            "Account deletion cancelled."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/profile/${currentUser.id}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Failed to delete account."
+            );
+
+            return;
+
+        }
+
+
+        localStorage.removeItem(
+            "habitforgeUser"
+        );
+
+
+        alert(
+            "Your account has been deleted."
+        );
+
+
+        window.location.href =
+            "register.html";
+
+
+    } catch (error) {
+
+        console.log(error);
+
+        alert(
+            "Unable to connect to server."
+        );
+
+    }
+
+}
+
+
+
+function logout() {
+
+    localStorage.removeItem(
+        "habitforgeUser"
+    );
+
+    window.location.href =
+        "login.html";
+
+}
+
+
+loadProfile();
+
+</script>
+
+</body>
+
+</html>

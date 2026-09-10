@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HabitForge - Goals</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background: #080808;
+    color: white;
+    min-height: 100vh;
+}
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 240px;
+    height: 100vh;
+    background: #0d0d0d;
+    border-right: 1px solid #2b2413;
+    padding: 25px 18px;
+    z-index: 1000;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.logo h1 {
+    color: #d4af37;
+    font-size: 27px;
+}
+
+.logo p {
+    color: #777;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #aaa;
+    padding: 13px 15px;
+    border-radius: 8px;
+    display: block;
+    font-size: 14px;
+}
+
+.nav a:hover,
+.nav a.active {
+    background: #19150b;
+    color: #d4af37;
+}
+
+.logout {
+    position: absolute;
+    bottom: 25px;
+    left: 18px;
+    right: 18px;
+}
+
+.logout a {
+    text-decoration: none;
+    color: #999;
+    padding: 13px 15px;
+    display: block;
+}
+
+.logout a:hover {
+    color: #ff6b6b;
+}
+
+.main {
+    margin-left: 240px;
+    padding: 35px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.title h2 {
+    font-size: 28px;
+}
+
+.title p {
+    color: #777;
+    margin-top: 7px;
+    font-size: 14px;
+}
+
+.user {
+    color: #aaa;
+    font-size: 13px;
+}
+
+.card {
+    background: #101010;
+    border: 1px solid #29230f;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 22px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.card-header h3 {
+    font-size: 19px;
+}
+
+.gold-line {
+    width: 45px;
+    height: 3px;
+    background: #d4af37;
+    margin-top: 8px;
+}
+
+.gold-btn {
+    background: #d4af37;
+    color: #080808;
+    border: none;
+    padding: 10px 17px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.goal-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.goal {
+    background: #151515;
+    border: 1px solid #292929;
+    border-radius: 10px;
+    padding: 18px;
+}
+
+.goal h3 {
+    color: #d4af37;
+    margin-bottom: 8px;
+}
+
+.goal p {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 7px;
+}
+
+.progress-bg {
+    height: 9px;
+    background: #252525;
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 14px 0;
+}
+
+.progress {
+    height: 100%;
+    background: #d4af37;
+}
+
+.goal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.goal-actions button {
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.complete {
+    border: 1px solid #4caf50;
+    color: #4caf50;
+    background: transparent;
+}
+
+.delete {
+    border: 1px solid #a33;
+    color: #e57373;
+    background: transparent;
+}
+
+.complete:hover {
+    background: #4caf50;
+    color: #080808;
+}
+
+.delete:hover {
+    background: #8b3030;
+    color: white;
+}
+
+.empty {
+    text-align: center;
+    color: #777;
+    padding: 40px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.8);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 2000;
+}
+
+.modal-box {
+    width: 100%;
+    max-width: 480px;
+    background: #111;
+    border: 1px solid #3a3014;
+    border-radius: 13px;
+    padding: 28px;
+}
+
+.modal-box h2 {
+    color: #d4af37;
+    margin-bottom: 22px;
+}
+
+.form-group {
+    margin-bottom: 17px;
+}
+
+label {
+    display: block;
+    color: #aaa;
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 12px;
+    background: #191919;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 7px;
+    outline: none;
+}
+
+textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+    border-color: #d4af37;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cancel {
+    background: #222;
+    border: 1px solid #333;
+    color: #aaa;
+    padding: 10px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+@media(max-width:700px) {
+
+    .sidebar {
+        top: auto;
+        bottom: 0;
+        width: 100%;
+        height: auto;
+        padding: 8px;
+        border-right: none;
+        border-top: 1px solid #29230f;
+    }
+
+    .logo,
+    .logout {
+        display: none;
+    }
+
+    .nav {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    .nav a {
+        padding: 10px 5px;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    .nav a:nth-child(n+6) {
+        display: none;
+    }
+
+    .main {
+        margin-left: 0;
+        padding: 20px 15px 90px;
+    }
+
+    .topbar {
+        display: block;
+    }
+
+    .user {
+        margin-top: 10px;
+    }
+
+    .goal-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<aside class="sidebar">
+
+    <div class="logo">
+        <h1>HabitForge</h1>
+        <p>BUILD BETTER HABITS</p>
+    </div>
+
+    <nav class="nav">
+
+        <a href="index.html">
+            Dashboard
+        </a>
+
+        <a href="habits.html">
+            My Habits
+        </a>
+
+        <a href="goals.html" class="active">
+            Goals
+        </a>
+
+        <a href="tracking.html">
+            Tracking
+        </a>
+
+        <a href="calendar.html">
+            Calendar
+        </a>
+
+        <a href="profile.html">
+            Profile
+        </a>
+
+        <a href="index.html">
+            Help
+        </a>
+
+    </nav>
+
+    <div class="logout">
+        <a href="#" onclick="logout()">
+            Logout
+        </a>
+    </div>
+
+</aside>
+
+
+<main class="main">
+
+    <div class="topbar">
+
+        <div class="title">
+
+            <h2>Goals</h2>
+
+            <p>
+                Set targets and work towards meaningful achievements.
+            </p>
+
+        </div>
+
+        <div class="user" id="userInfo">
+            User
+        </div>
+
+    </div>
+
+
+    <section class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>My Goals</h3>
+
+                <div class="gold-line"></div>
+
+            </div>
+
+            <button
+                class="gold-btn"
+                onclick="openGoalModal()"
+            >
+                + Add Goal
+            </button>
+
+        </div>
+
+
+        <div
+            id="goalList"
+            class="goal-list"
+        >
+
+            <div class="empty">
+                Loading goals...
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<div
+    id="goalModal"
+    class="modal"
+>
+
+    <div class="modal-box">
+
+        <h2 id="modalTitle">
+            Add New Goal
+        </h2>
+
+        <div class="form-group">
+
+            <label>
+                Goal Title
+            </label>
+
+            <input
+                type="text"
+                id="goalTitle"
+                placeholder="e.g. Complete 30 days of exercise"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Description
+            </label>
+
+            <textarea
+                id="goalDescription"
+                placeholder="Describe your goal..."
+            ></textarea>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Target
+            </label>
+
+            <input
+                type="number"
+                id="goalTarget"
+                min="1"
+                value="30"
+            >
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button
+                class="cancel"
+                onclick="closeGoalModal()"
+            >
+                Cancel
+            </button>
+
+            <button
+                class="gold-btn"
+                onclick="saveGoal()"
+            >
+                Save Goal
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="session.js"></script>
+
+<script>
+
+const API_URL =
+    "https://habitforge-server-k8gd.onrender.com";
+
+const savedUser =
+    localStorage.getItem("habitforgeUser");
+
+if (!savedUser) {
+
+    window.location.href =
+        "login.html";
+
+}
+
+const currentUser =
+    JSON.parse(savedUser);
+
+document.getElementById("userInfo")
+    .textContent =
+    currentUser.name || "User";
+
+
+let editingGoalId = null;
+
+
+async function loadGoals() {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/goals?userId=${encodeURIComponent(currentUser.id)}`
+            );
+
+        const goals =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                goals.message ||
+                "Failed to load goals."
+            );
+        }
+
+        const container =
+            document.getElementById("goalList");
+
+        container.innerHTML = "";
+
+        if (goals.length === 0) {
+
+            container.innerHTML = `
+                <div class="empty">
+                    No goals created yet.
+                    <br><br>
+                    Create your first goal.
+                </div>
+            `;
+
+            return;
+        }
+
+        goals.forEach(goal => {
+
+            const target =
+                Number(goal.target) || 1;
+
+            const progress =
+                Math.min(
+                    100,
+                    Math.round(
+                        (Number(goal.progress || 0) /
+                        target) * 100
+                    )
+                );
+
+            const item =
+                document.createElement("div");
+
+            item.className = "goal";
+
+            item.innerHTML = `
+
+                <h3>
+                    ${escapeHTML(goal.title)}
+                </h3>
+
+                <p>
+                    ${escapeHTML(
+                        goal.description || "No description"
+                    )}
+                </p>
+
+                <p>
+                    Progress:
+                    ${goal.progress || 0}
+                    / ${target}
+                </p>
+
+                <div class="progress-bg">
+
+                    <div
+                        class="progress"
+                        style="width:${progress}%"
+                    ></div>
+
+                </div>
+
+                <p>
+                    ${progress}% complete
+                </p>
+
+                <div class="goal-actions">
+
+                    <button
+                        class="complete"
+                        onclick="increaseGoal('${goal._id}')"
+                    >
+                        + Progress
+                    </button>
+
+                    <button
+                        class="delete"
+                        onclick="deleteGoal('${goal._id}')"
+                    >
+                        Delete
+                    </button>
+
+                </div>
+            `;
+
+            container.appendChild(item);
+
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        document.getElementById("goalList")
+            .innerHTML = `
+                <div class="empty">
+                    Unable to load goals.
+                    Make sure the server is running.
+                </div>
+            `;
+
+    }
+
+}
+
+
+function openGoalModal() {
+
+    editingGoalId = null;
+
+    document.getElementById("modalTitle")
+        .textContent =
+        "Add New Goal";
+
+    document.getElementById("goalTitle")
+        .value = "";
+
+    document.getElementById("goalDescription")
+        .value = "";
+
+    document.getElementById("goalTarget")
+        .value = "30";
+
+    document.getElementById("goalModal")
+        .style.display = "flex";
+
+}
+
+
+function closeGoalModal() {
+
+    document.getElementById("goalModal")
+        .style.display = "none";
+
+}
+
+
+async function saveGoal() {
+
+    const title =
+        document.getElementById("goalTitle")
+            .value
+            .trim();
+
+    const description =
+        document.getElementById("goalDescription")
+            .value
+            .trim();
+
+    const target =
+        Number(
+            document.getElementById("goalTarget")
+                .value
+        );
+
+    if (!title) {
+
+        alert("Please enter a goal title.");
+
+        return;
+    }
+
+    if (!target || target < 1) {
+
+        alert("Target must be at least 1.");
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/goals`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        userId:
+                            currentUser.id,
+
+                        title,
+                        description,
+                        target
+
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Failed to create goal."
+            );
+
+            return;
+        }
+
+        closeGoalModal();
+
+        loadGoals();
+
+    } catch (error) {
+
+        alert(
+            "Unable to connect to server."
+        );
+
+    }
+
+}
+
+
+async function increaseGoal(goalId) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/goals/${goalId}/progress`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        userId:
+                            currentUser.id
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Unable to update goal."
+            );
+
+            return;
+        }
+
+        loadGoals();
+
+    } catch (error) {
+
+        alert(
+            "Unable to connect to server."
+        );
+
+    }
+
+}
+
+
+async function deleteGoal(goalId) {
+
+    if (
+        !confirm(
+            "Delete this goal permanently?"
+        )
+    ) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/goals/${goalId}?userId=${encodeURIComponent(currentUser.id)}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Failed to delete goal."
+            );
+
+            return;
+        }
+
+        loadGoals();
+
+    } catch (error) {
+
+        alert(
+            "Unable to connect to server."
+        );
+
+    }
+
+}
+
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function logout() {
+
+    localStorage.removeItem(
+        "habitforgeUser"
+    );
+
+    localStorage.removeItem(
+        "habitforgeLastActivity"
+    );
+
+    window.location.href =
+        "login.html";
+
+}
+
+
+loadGoals();
+
+</script>
+
+</body>
+
+</html>

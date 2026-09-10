@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking | HabitForge</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #080808;
+            color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .sidebar {
+            width: 250px;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #0d0d0d;
+            border-right: 1px solid #2a2a2a;
+            padding: 25px 15px;
+        }
+
+        .brand {
+            color: #d4af37;
+            font-size: 25px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .nav-link {
+            color: #aaa;
+            padding: 13px 15px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            transition: .2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #19150a;
+            color: #d4af37;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+        }
+
+        .main {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .gold {
+            color: #d4af37;
+        }
+
+        .subtitle {
+            color: #888;
+        }
+
+        .card-box {
+            background: #101010;
+            border: 1px solid #292929;
+            border-radius: 16px;
+            padding: 22px;
+            height: 100%;
+        }
+
+        .stat-number {
+            font-size: 30px;
+            font-weight: 800;
+            color: #d4af37;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .progress {
+            height: 9px;
+            background: #252525;
+        }
+
+        .progress-bar {
+            background: #d4af37;
+        }
+
+        .habit-row {
+            padding: 16px 0;
+            border-bottom: 1px solid #252525;
+        }
+
+        .habit-row:last-child {
+            border-bottom: none;
+        }
+
+        .habit-name {
+            font-weight: 700;
+        }
+
+        .small-text {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .day-box {
+            background: #181818;
+            border: 1px solid #292929;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .day-number {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .bar {
+            height: 6px;
+            background: #292929;
+            border-radius: 10px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #d4af37;
+        }
+
+        @media(max-width: 800px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                min-height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .brand {
+                margin-bottom: 15px;
+            }
+
+            .nav-link {
+                display: inline-block;
+                margin-right: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <div class="brand">
+        <i class="bi bi-lightning-charge-fill"></i> HabitForge
+    </div>
+
+    <a href="index.html" class="nav-link">
+        <i class="bi bi-grid"></i> Dashboard
+    </a>
+
+    <a href="habits.html" class="nav-link">
+        <i class="bi bi-check2-square"></i> My Habits
+    </a>
+
+    <a href="goals.html" class="nav-link">
+        <i class="bi bi-bullseye"></i> Goals
+    </a>
+
+    <a href="tracking.html" class="nav-link active">
+        <i class="bi bi-bar-chart"></i> Tracking
+    </a>
+
+    <a href="calendar.html" class="nav-link">
+        <i class="bi bi-calendar3"></i> Calendar
+    </a>
+
+    <a href="profile.html" class="nav-link">
+        <i class="bi bi-person"></i> Profile
+    </a>
+
+    <a href="index.html#help" class="nav-link">
+        <i class="bi bi-question-circle"></i> Help
+    </a>
+
+    <a href="#" class="nav-link" id="logoutBtn">
+        <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+</div>
+
+<div class="main">
+
+    <div class="mb-4">
+        <div class="page-title">
+            Tracking <span class="gold">Analytics</span>
+        </div>
+        <div class="subtitle">
+            Monitor your habit performance and consistency.
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card-box">
+                <div class="stat-number" id="totalHabits">0</div>
+                <div class="stat-label">Total Habits</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card-box">
+                <div class="stat-number" id="todayCompleted">0</div>
+                <div class="stat-label">Completed Today</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card-box">
+                <div class="stat-number" id="completionRate">0%</div>
+                <div class="stat-label">Overall Completion Rate</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-7">
+            <div class="card-box">
+                <h5 class="mb-4">
+                    <i class="bi bi-graph-up gold"></i>
+                    Last 7 Days
+                </h5>
+
+                <div id="weeklyTracking"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card-box">
+                <h5 class="mb-4">
+                    <i class="bi bi-pie-chart gold"></i>
+                    Habit Performance
+                </h5>
+
+                <div id="habitPerformance"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card-box mt-4">
+        <h5 class="mb-3">
+            <i class="bi bi-lightning-charge gold"></i>
+            Productivity Summary
+        </h5>
+
+        <div id="summaryText" class="subtitle">
+            Loading your productivity summary...
+        </div>
+    </div>
+
+</div>
+
+<script src="session.js"></script>
+
+<script>
+    const API = "https://habitforge-server-k8gd.onrender.com";
+
+    const user = JSON.parse(localStorage.getItem("habitforgeUser"));
+
+    if (!user || !user._id) {
+        window.location.href = "login.html";
+    }
+
+    function formatDate(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+    }
+
+    function getLast7Days() {
+        const days = [];
+
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setHours(0, 0, 0, 0);
+            date.setDate(date.getDate() - i);
+
+            days.push({
+                date,
+                key: formatDate(date),
+                label: date.toLocaleDateString("en-IN", {
+                    weekday: "short",
+                    day: "numeric"
+                })
+            });
+        }
+
+        return days;
+    }
+
+    async function loadTracking() {
+
+        try {
+            const response = await fetch(
+                `${API}/api/habits?userId=${user._id}`
+            );
+
+            const habits = await response.json();
+
+            if (!Array.isArray(habits)) {
+                throw new Error("Unable to load habits");
+            }
+
+            document.getElementById("totalHabits").textContent = habits.length;
+
+            const today = formatDate(new Date());
+
+            let completedToday = 0;
+            let totalPossible = habits.length * 7;
+            let totalCompleted = 0;
+
+            habits.forEach(habit => {
+
+                const dates = Array.isArray(habit.completedDates)
+                    ? habit.completedDates
+                    : [];
+
+                if (dates.includes(today)) {
+                    completedToday++;
+                }
+
+                totalCompleted += dates.length;
+            });
+
+            document.getElementById("todayCompleted").textContent =
+                completedToday;
+
+            let rate = totalPossible > 0
+                ? Math.min(100, Math.round(
+                    (totalCompleted / totalPossible) * 100
+                ))
+                : 0;
+
+            document.getElementById("completionRate").textContent =
+                rate + "%";
+
+            renderWeekly(habits);
+            renderPerformance(habits);
+            renderSummary(habits, completedToday);
+
+        } catch (error) {
+            console.error(error);
+
+            document.getElementById("summaryText").textContent =
+                "Unable to load tracking data. Make sure the server is running.";
+        }
+    }
+
+    function renderWeekly(habits) {
+
+        const container =
+            document.getElementById("weeklyTracking");
+
+        const days = getLast7Days();
+
+        let html = "";
+
+        days.forEach(day => {
+
+            let completed = 0;
+
+            habits.forEach(habit => {
+
+                const dates = Array.isArray(habit.completedDates)
+                    ? habit.completedDates
+                    : [];
+
+                if (dates.includes(day.key)) {
+                    completed++;
+                }
+            });
+
+            const percentage = habits.length > 0
+                ? Math.round((completed / habits.length) * 100)
+                : 0;
+
+            html += `
+                <div class="habit-row">
+
+                    <div class="d-flex justify-content-between">
+                        <span>${day.label}</span>
+
+                        <span class="gold">
+                            ${completed}/${habits.length}
+                        </span>
+                    </div>
+
+                    <div class="bar">
+                        <div
+                            class="bar-fill"
+                            style="width:${percentage}%"
+                        ></div>
+                    </div>
+
+                </div>
+            `;
+        });
+
+        container.innerHTML = html || `
+            <div class="subtitle">
+                No habit data available yet.
+            </div>
+        `;
+    }
+
+    function renderPerformance(habits) {
+
+        const container =
+            document.getElementById("habitPerformance");
+
+        if (!habits.length) {
+            container.innerHTML = `
+                <div class="subtitle">
+                    Add habits to start tracking performance.
+                </div>
+            `;
+            return;
+        }
+
+        const sorted = [...habits].sort((a, b) => {
+
+            const aCount = Array.isArray(a.completedDates)
+                ? a.completedDates.length
+                : 0;
+
+            const bCount = Array.isArray(b.completedDates)
+                ? b.completedDates.length
+                : 0;
+
+            return bCount - aCount;
+        });
+
+        let html = "";
+
+        sorted.forEach(habit => {
+
+            const dates = Array.isArray(habit.completedDates)
+                ? habit.completedDates
+                : [];
+
+            const count = dates.length;
+
+            html += `
+                <div class="habit-row">
+
+                    <div class="d-flex justify-content-between">
+                        <span class="habit-name">
+                            ${escapeHTML(habit.name || habit.habitName || "Habit")}
+                        </span>
+
+                        <span class="gold">
+                            ${count}
+                        </span>
+                    </div>
+
+                    <div class="small-text">
+                        Total completions
+                    </div>
+
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function renderSummary(habits, completedToday) {
+
+        const summary =
+            document.getElementById("summaryText");
+
+        if (!habits.length) {
+            summary.textContent =
+                "You have not created any habits yet. Start by adding your first habit.";
+            return;
+        }
+
+        if (completedToday === habits.length) {
+
+            summary.textContent =
+                "Excellent! You completed every habit scheduled for today. Keep the streak going.";
+
+        } else if (completedToday > 0) {
+
+            summary.textContent =
+                `You completed ${completedToday} of ${habits.length} habits today. Finish the remaining habits to improve your consistency.`;
+
+        } else {
+
+            summary.textContent =
+                "No habits have been completed today yet. Start now and build your consistency.";
+        }
+    }
+
+    function escapeHTML(value) {
+
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", e => {
+
+        e.preventDefault();
+
+        localStorage.removeItem("habitforgeUser");
+        localStorage.removeItem("habitforgeLastActivity");
+
+        window.location.href = "login.html";
+    });
+
+    loadTracking();
+</script>
+
+</body>
+</html>

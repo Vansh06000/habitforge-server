@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HabitForge - My Habits</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background: #080808;
+    color: white;
+    min-height: 100vh;
+}
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 240px;
+    height: 100vh;
+    background: #0d0d0d;
+    border-right: 1px solid #2b2413;
+    padding: 25px 18px;
+    z-index: 1000;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.logo h1 {
+    color: #d4af37;
+    font-size: 27px;
+}
+
+.logo p {
+    color: #777;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #aaa;
+    padding: 13px 15px;
+    border-radius: 8px;
+    display: block;
+    font-size: 14px;
+}
+
+.nav a:hover,
+.nav a.active {
+    background: #19150b;
+    color: #d4af37;
+}
+
+.logout {
+    position: absolute;
+    bottom: 25px;
+    left: 18px;
+    right: 18px;
+}
+
+.logout a {
+    color: #999;
+    padding: 13px 15px;
+    display: block;
+    text-decoration: none;
+}
+
+.main {
+    margin-left: 240px;
+    padding: 35px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.title h2 {
+    font-size: 28px;
+}
+
+.title p {
+    color: #777;
+    font-size: 14px;
+    margin-top: 7px;
+}
+
+.user {
+    color: #aaa;
+    font-size: 13px;
+}
+
+.card {
+    background: #101010;
+    border: 1px solid #29230f;
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.card-header h3 {
+    font-size: 19px;
+}
+
+.gold-line {
+    width: 45px;
+    height: 3px;
+    background: #d4af37;
+    margin-top: 8px;
+}
+
+.gold-btn {
+    background: #d4af37;
+    color: #080808;
+    border: none;
+    padding: 10px 17px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.habit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.habit {
+    background: #151515;
+    border: 1px solid #292929;
+    border-radius: 10px;
+    padding: 17px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.habit h3 {
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.habit p {
+    color: #777;
+    font-size: 12px;
+}
+
+.actions {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
+.actions button {
+    padding: 8px 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.complete {
+    border: 1px solid #d4af37;
+    color: #d4af37;
+    background: transparent;
+}
+
+.complete.done {
+    background: #d4af37;
+    color: #080808;
+}
+
+.delete {
+    border: 1px solid #a33;
+    color: #e57373;
+    background: transparent;
+}
+
+.complete:hover {
+    background: #d4af37;
+    color: #080808;
+}
+
+.delete:hover {
+    background: #8b3030;
+    color: white;
+}
+
+.empty {
+    text-align: center;
+    color: #777;
+    padding: 45px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.8);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 2000;
+}
+
+.modal-box {
+    background: #111;
+    border: 1px solid #3a3014;
+    width: 100%;
+    max-width: 470px;
+    border-radius: 13px;
+    padding: 28px;
+}
+
+.modal-box h2 {
+    color: #d4af37;
+    margin-bottom: 22px;
+}
+
+.form-group {
+    margin-bottom: 17px;
+}
+
+label {
+    display: block;
+    color: #aaa;
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 12px;
+    background: #191919;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 7px;
+    outline: none;
+}
+
+input:focus,
+select:focus {
+    border-color: #d4af37;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cancel {
+    background: #222;
+    border: 1px solid #333;
+    color: #aaa;
+    padding: 10px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+@media(max-width:700px) {
+
+    .sidebar {
+        top: auto;
+        bottom: 0;
+        width: 100%;
+        height: auto;
+        padding: 8px;
+        border-right: none;
+        border-top: 1px solid #29230f;
+    }
+
+    .logo,
+    .logout {
+        display: none;
+    }
+
+    .nav {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    .nav a {
+        padding: 10px 5px;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    .nav a:nth-child(n+6) {
+        display: none;
+    }
+
+    .main {
+        margin-left: 0;
+        padding: 20px 15px 90px;
+    }
+
+    .topbar {
+        display: block;
+    }
+
+    .user {
+        margin-top: 10px;
+    }
+
+    .habit {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .actions {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <h1>HabitForge</h1>
+
+        <p>BUILD BETTER HABITS</p>
+
+    </div>
+
+
+    <nav class="nav">
+
+        <a href="index.html">
+            Dashboard
+        </a>
+
+        <a
+            href="habits.html"
+            class="active"
+        >
+            My Habits
+        </a>
+
+        <a href="goals.html">
+            Goals
+        </a>
+
+        <a href="tracking.html">
+            Tracking
+        </a>
+
+        <a href="calendar.html">
+            Calendar
+        </a>
+
+        <a href="profile.html">
+            Profile
+        </a>
+
+        <a href="index.html">
+            Help
+        </a>
+
+    </nav>
+
+
+    <div class="logout">
+
+        <a
+            href="#"
+            onclick="logout()"
+        >
+            Logout
+        </a>
+
+    </div>
+
+</aside>
+
+
+<main class="main">
+
+    <div class="topbar">
+
+        <div class="title">
+
+            <h2>My Habits</h2>
+
+            <p>
+                Create and manage your daily routines.
+            </p>
+
+        </div>
+
+        <div
+            class="user"
+            id="userInfo"
+        >
+            User
+        </div>
+
+    </div>
+
+
+    <section class="card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>All Habits</h3>
+
+                <div class="gold-line"></div>
+
+            </div>
+
+            <button
+                class="gold-btn"
+                onclick="openHabitModal()"
+            >
+                + Add Habit
+            </button>
+
+        </div>
+
+
+        <div
+            id="habitList"
+            class="habit-list"
+        >
+
+            <div class="empty">
+                Loading habits...
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<div
+    id="habitModal"
+    class="modal"
+>
+
+    <div class="modal-box">
+
+        <h2 id="modalTitle">
+            Add New Habit
+        </h2>
+
+
+        <div class="form-group">
+
+            <label>
+                Habit Name
+            </label>
+
+            <input
+                type="text"
+                id="habitName"
+                placeholder="e.g. Read 30 minutes"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Category
+            </label>
+
+            <select id="habitCategory">
+
+                <option value="">
+                    Select category
+                </option>
+
+                <option value="Health">
+                    Health
+                </option>
+
+                <option value="Fitness">
+                    Fitness
+                </option>
+
+                <option value="Study">
+                    Study
+                </option>
+
+                <option value="Work">
+                    Work
+                </option>
+
+                <option value="Personal">
+                    Personal
+                </option>
+
+                <option value="Other">
+                    Other
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Frequency
+            </label>
+
+            <select id="habitFrequency">
+
+                <option value="">
+                    Select frequency
+                </option>
+
+                <option value="Daily">
+                    Daily
+                </option>
+
+                <option value="Weekly">
+                    Weekly
+                </option>
+
+                <option value="Monthly">
+                    Monthly
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Target
+            </label>
+
+            <input
+                type="number"
+                id="habitTarget"
+                value="1"
+                min="1"
+            >
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button
+                class="cancel"
+                onclick="closeHabitModal()"
+            >
+                Cancel
+            </button>
+
+            <button
+                class="gold-btn"
+                onclick="saveHabit()"
+            >
+                Save Habit
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="session.js"></script>
+
+<script>
+
+const API_URL =
+    "https://habitforge-server-k8gd.onrender.com";
+
+const savedUser =
+    localStorage.getItem("habitforgeUser");
+
+if (!savedUser) {
+
+    window.location.href =
+        "login.html";
+
+}
+
+const currentUser =
+    JSON.parse(savedUser);
+
+document.getElementById("userInfo")
+    .textContent =
+    currentUser.name || "User";
+
+
+let editingHabitId = null;
+
+
+async function loadHabits() {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/habits?userId=${encodeURIComponent(currentUser.id)}`
+            );
+
+        const habits =
+            await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                habits.message ||
+                "Failed to load habits."
+            );
+
+        }
+
+        const list =
+            document.getElementById("habitList");
+
+        list.innerHTML = "";
+
+        if (habits.length === 0) {
+
+            list.innerHTML = `
+                <div class="empty">
+                    No habits created yet.
+                    <br><br>
+                    Create your first habit.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        const today =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        habits.forEach(habit => {
+
+            const completed =
+                (habit.completedDates || [])
+                    .includes(today);
+
+
+            const item =
+                document.createElement("div");
+
+            item.className = "habit";
+
+
+            item.innerHTML = `
+
+                <div>
+
+                    <h3>
+                        ${escapeHTML(habit.name)}
+                    </h3>
+
+                    <p>
+                        ${escapeHTML(habit.category)}
+                        •
+                        ${escapeHTML(habit.frequency)}
+                        • Target:
+                        ${habit.target || 1}
+                    </p>
+
+                </div>
+
+
+                <div class="actions">
+
+                    <button
+                        class="complete ${completed ? "done" : ""}"
+                        onclick="completeHabit('${habit._id}')"
+                    >
+                        ${
+                            completed
+                            ? "Completed"
+                            : "Complete Today"
+                        }
+                    </button>
+
+
+                    <button
+                        class="delete"
+                        onclick="deleteHabit('${habit._id}')"
+                    >
+                        Delete
+                    </button>
+
+                </div>
+
+            `;
+
+
+            list.appendChild(item);
+
+        });
+
+
+    } catch (error) {
+
+        console.log(error);
+
+        document.getElementById("habitList")
+            .innerHTML = `
+                <div class="empty">
+                    Unable to load habits.
+                    Make sure the server is running.
+                </div>
+            `;
+
+    }
+
+}
+
+
+function openHabitModal() {
+
+    editingHabitId = null;
+
+    document.getElementById("modalTitle")
+        .textContent =
+        "Add New Habit";
+
+    document.getElementById("habitName")
+        .value = "";
+
+    document.getElementById("habitCategory")
+        .value = "";
+
+    document.getElementById("habitFrequency")
+        .value = "";
+
+    document.getElementById("habitTarget")
+        .value = "1";
+
+    document.getElementById("habitModal")
+        .style.display = "flex";
+
+}
+
+
+function closeHabitModal() {
+
+    document.getElementById("habitModal")
+        .style.display = "none";
+
+}
+
+
+async function saveHabit() {
+
+    const name =
+        document.getElementById("habitName")
+            .value
+            .trim();
+
+    const category =
+        document.getElementById("habitCategory")
+            .value;
+
+    const frequency =
+        document.getElementById("habitFrequency")
+            .value;
+
+    const target =
+        Number(
+            document.getElementById("habitTarget")
+                .value
+        );
+
+
+    if (!name ||
+        !category ||
+        !frequency) {
+
+        alert(
+            "Please fill in all habit details."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/habits`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        userId:
+                            currentUser.id,
+
+                        name,
+                        category,
+                        frequency,
+                        target:
+                            target || 1
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Failed to save habit."
+            );
+
+            return;
+
+        }
+
+
+        closeHabitModal();
+
+        loadHabits();
+
+
+    } catch (error) {
+
+        alert(
+            "Unable to connect to server."
+        );
+
+    }
+
+}
+
+
+async function completeHabit(habitId) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/habits/${habitId}/complete`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        userId:
+                            currentUser.id
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Unable to update habit."
+            );
+
+            return;
+
+        }
+
+
+        loadHabits();
+
+
+    } catch (error) {
+
+        alert(
+            "Unable to connect to server."
+        );
+
+    }
+
+}
+
+
+async function deleteHabit(habitId) {
+
+    if (
+        !confirm(
+            "Delete this habit permanently?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/habits/${habitId}?userId=${encodeURIComponent(currentUser.id)}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Failed to delete habit."
+            );
+
+            return;
+
+        }
+
+
+        loadHabits();
+
+
+    } catch (error) {
+
+        alert(
+            "Unable to connect to server."
+        );
+
+    }
+
+}
+
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function logout() {
+
+    localStorage.removeItem(
+        "habitforgeUser"
+    );
+
+    localStorage.removeItem(
+        "habitforgeLastActivity"
+    );
+
+    window.location.href =
+        "login.html";
+
+}
+
+
+loadHabits();
+
+</script>
+
+</body>
+
+</html>
