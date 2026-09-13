@@ -1,166 +1,226 @@
-﻿require("dotenv").config();
+// ============================================================
+// HabitForge Backend Server
+// ============================================================
+
+require("dotenv").config();
+
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
-const express = require("express");const cors = require("cors");
+const express = require("express");
+const cors = require("cors");
+const bcrypt = require("bcryptjs");
 const { MongoClient, ObjectId } = require("mongodb");
 
 const app = express();
 
+// ============================================================
+// MIDDLEWARE
+// ============================================================
+
 app.use(cors());
 app.use(express.json());
+
+// ============================================================
+// DATABASE CONFIGURATION
+// ============================================================
 
 const mongoURL = process.env.MONGODB_URI;
 
 if (!mongoURL) {
-    throw new Error("MONGODB_URI is not defined");
+    throw new Error("MONGODB_URI is not defined in .env");
 }
 
 const client = new MongoClient(mongoURL);
 
 let database;
 
+// ============================================================
+// DATABASE CONNECTION
+// ============================================================
 
 async function connectDatabase() {
-
     try {
-
         await client.connect();
 
-        database =
-            client.db("habitforge");
+        database = client.db("habitforge");
 
-        console.log(
-            "MongoDB connected successfully"
-        );
-
+        console.log("MongoDB connected successfully");
     } catch (error) {
-
-        console.log(
-            "MongoDB connection failed:",
-            error
-        );
-
+        console.error("MongoDB connection failed:", error);
+        throw error;
     }
-
 }
 
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
 
-// ==========================================
-// HOME
-// ==========================================
+function isValidObjectId(id) {
+    return ObjectId.isValid(id);
+}
+
+function getObjectId(id) {
+    return new ObjectId(id);
+}
+
+function cleanText(value) {
+    return typeof value === "string"
+        ? value.trim()
+        : "";
+}
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidPassword(password) {
+    return (
+        typeof password === "string" &&
+        password.length >= 6
+    );
+}
+
+function normalizeNumber(value, fallback = 1) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number) || number <= 0) {
+        return fallback;
+    }
+
+    return number;
+}
+
+async function verifyPassword(password, storedPassword) {
+    if (
+        typeof password !== "string" ||
+        typeof storedPassword !== "string"
+    ) {
+        return false;
+    }
+
+    // New secure bcrypt password
+    if (storedPassword.startsWith("$2")) {
+        return await bcrypt.compare(
+            password,
+            storedPassword
+        );
+    }
+
+    // Legacy plaintext password
+    return password === storedPassword;
+}
+
+// ============================================================
+// HOME / API STATUS
+// ============================================================
 
 app.get("/", (req, res) => {
-
     res.json({
-        message:
-            "HabitForge API is running"
+        message: "HabitForge API is running",
+        status: "online",
+        database: database ? "connected" : "connecting"
     });
-
 });
 
-
-// ==========================================
+// ============================================================
 // REGISTER
-// ==========================================
+// ============================================================
 
 app.post(
     "/api/auth/register",
     async (req, res) => {
-
         try {
+            const name = cleanText(req.body.name);
+            const email = cleanText(req.body.email).toLowerCase();
+            const password = req.body.password;
 
-            const {
-                name,
-                email,
-                password
-            } = req.body;
+            // ----------------------------
+            // Validation
+            // ----------------------------
 
-
-            if (
-                !name ||
-                !email ||
-                !password
-            ) {
-
+            if (!name || !email || !password) {
                 return res.status(400).json({
                     message:
                         "Please fill in all required fields."
                 });
-
             }
 
+            if (name.length < 2) {
+                return res.status(400).json({
+                    message:
+                        "Name must contain at least 2 characters."
+                });
+            }
 
-            if (password.length < 6) {
+            if (!isValidEmail(email)) {
+                return res.status(400).json({
+                    message:
+                        "Please enter a valid email address."
+                });
+            }
 
+            if (!isValidPassword(password)) {
                 return res.status(400).json({
                     message:
                         "Password must contain at least 6 characters."
                 });
-
             }
 
-
-            const cleanEmail =
-                email
-                    .trim()
-                    .toLowerCase();
-
+            // ----------------------------
+            // Check existing user
+            // ----------------------------
 
             const existingUser =
                 await database
                     .collection("users")
                     .findOne({
-                        email: cleanEmail
+                        email
                     });
 
-
             if (existingUser) {
-
                 return res.status(409).json({
                     message:
                         "An account with this email already exists."
                 });
-
             }
 
+            // ----------------------------
+            // Hash password
+            // ----------------------------
+
+            const hashedPassword =
+                await bcrypt.hash(password, 12);
+
+            // ----------------------------
+            // Create user
+            // ----------------------------
 
             const user = {
-
-                name:
-                    name.trim(),
-
-                email:
-                    cleanEmail,
-
-                password,
-
-                createdAt:
-                    new Date()
-
+                name,
+                email,
+                password: hashedPassword,
+                createdAt: new Date()
             };
-
 
             const result =
                 await database
                     .collection("users")
                     .insertOne(user);
 
+            // ----------------------------
+            // Response
+            // ----------------------------
 
             res.status(201).json({
-
                 message:
                     "Account created successfully.",
-
                 userId:
-                    result.insertedId
-
+                    result.insertedId.toString()
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Registration error:",
                 error
             );
@@ -169,74 +229,107 @@ app.post(
                 message:
                     "Failed to create account."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // LOGIN
-// ==========================================
+// ============================================================
 
 app.post(
     "/api/auth/login",
     async (req, res) => {
-
         try {
+            const email =
+                cleanText(req.body.email).toLowerCase();
 
-            const {
-                email,
-                password
-            } = req.body;
+            const password =
+                req.body.password;
 
+            // ----------------------------
+            // Validation
+            // ----------------------------
 
-            if (
-                !email ||
-                !password
-            ) {
-
+            if (!email || !password) {
                 return res.status(400).json({
                     message:
                         "Email and password are required."
                 });
-
             }
 
+            // ----------------------------
+            // Find user
+            // ----------------------------
 
             const user =
                 await database
                     .collection("users")
                     .findOne({
-
-                        email:
-                            email
-                                .trim()
-                                .toLowerCase(),
-
-                        password
-
+                        email
                     });
 
-
             if (!user) {
-
                 return res.status(401).json({
                     message:
                         "Invalid email or password."
                 });
-
             }
 
+            // ----------------------------
+            // Verify password
+            // ----------------------------
+
+            const passwordCorrect =
+                await verifyPassword(
+                    password,
+                    user.password
+                );
+
+            if (!passwordCorrect) {
+                return res.status(401).json({
+                    message:
+                        "Invalid email or password."
+                });
+            }
+
+            // ----------------------------
+            // Upgrade old plaintext password
+            // ----------------------------
+
+            if (
+                typeof user.password === "string" &&
+                !user.password.startsWith("$2")
+            ) {
+                const newHash =
+                    await bcrypt.hash(
+                        password,
+                        12
+                    );
+
+                await database
+                    .collection("users")
+                    .updateOne(
+                        {
+                            _id: user._id
+                        },
+                        {
+                            $set: {
+                                password: newHash
+                            }
+                        }
+                    );
+            }
+
+            // ----------------------------
+            // Login response
+            // ----------------------------
 
             res.json({
-
                 message:
                     "Login successful.",
 
                 user: {
-
                     id:
                         user._id.toString(),
 
@@ -245,15 +338,11 @@ app.post(
 
                     email:
                         user.email
-
                 }
-
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Login error:",
                 error
             );
@@ -262,49 +351,43 @@ app.post(
                 message:
                     "Failed to login."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // GET PROFILE
-// ==========================================
+// ============================================================
 
 app.get(
     "/api/profile/:userId",
     async (req, res) => {
-
         try {
+            const { userId } = req.params;
 
-            const userId =
-                new ObjectId(
-                    req.params.userId
-                );
-
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
 
             const user =
                 await database
                     .collection("users")
                     .findOne({
-                        _id: userId
+                        _id:
+                            getObjectId(userId)
                     });
 
-
             if (!user) {
-
                 return res.status(404).json({
                     message:
                         "User not found."
                 });
-
             }
 
-
             res.json({
-
                 id:
                     user._id.toString(),
 
@@ -316,13 +399,10 @@ app.get(
 
                 createdAt:
                     user.createdAt
-
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Profile error:",
                 error
             );
@@ -331,114 +411,130 @@ app.get(
                 message:
                     "Failed to load profile."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // CHANGE PASSWORD
-// ==========================================
+// ============================================================
 
 app.put(
     "/api/profile/change-password",
     async (req, res) => {
-
         try {
+            const userId =
+                cleanText(req.body.userId);
 
-            const {
-                userId,
-                currentPassword,
-                newPassword
-            } = req.body;
+            const currentPassword =
+                req.body.currentPassword;
 
+            const newPassword =
+                req.body.newPassword;
+
+            // ----------------------------
+            // Validation
+            // ----------------------------
 
             if (
                 !userId ||
                 !currentPassword ||
                 !newPassword
             ) {
-
                 return res.status(400).json({
                     message:
                         "Please fill in all password fields."
                 });
-
             }
 
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
 
-            if (newPassword.length < 6) {
-
+            if (!isValidPassword(newPassword)) {
                 return res.status(400).json({
                     message:
                         "New password must contain at least 6 characters."
                 });
-
             }
 
+            // ----------------------------
+            // Find user
+            // ----------------------------
 
             const user =
                 await database
                     .collection("users")
                     .findOne({
                         _id:
-                            new ObjectId(userId)
+                            getObjectId(userId)
                     });
 
-
             if (!user) {
-
                 return res.status(404).json({
                     message:
                         "User not found."
                 });
-
             }
 
+            // ----------------------------
+            // Verify old password
+            // ----------------------------
 
-            if (
-                user.password !==
-                currentPassword
-            ) {
+            const currentPasswordCorrect =
+                await verifyPassword(
+                    currentPassword,
+                    user.password
+                );
 
+            if (!currentPasswordCorrect) {
                 return res.status(401).json({
                     message:
                         "Current password is incorrect."
                 });
-
             }
 
+            // ----------------------------
+            // Hash new password
+            // ----------------------------
+
+            const hashedNewPassword =
+                await bcrypt.hash(
+                    newPassword,
+                    12
+                );
+
+            // ----------------------------
+            // Update password
+            // ----------------------------
 
             await database
                 .collection("users")
                 .updateOne(
-
                     {
                         _id:
-                            new ObjectId(userId)
+                            getObjectId(userId)
                     },
-
                     {
                         $set: {
                             password:
-                                newPassword
+                                hashedNewPassword,
+                            updatedAt:
+                                new Date()
                         }
                     }
-
                 );
-
 
             res.json({
                 message:
                     "Password changed successfully."
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Change password error:",
                 error
             );
@@ -447,74 +543,75 @@ app.put(
                 message:
                     "Failed to change password."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // DELETE ACCOUNT
-// ==========================================
+// ============================================================
 
 app.delete(
     "/api/profile/:userId",
     async (req, res) => {
-
         try {
+            const { userId } = req.params;
 
-            const userId =
-                new ObjectId(
-                    req.params.userId
-                );
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
 
+            const objectId =
+                getObjectId(userId);
+
+            // ----------------------------
+            // Delete user
+            // ----------------------------
 
             const result =
                 await database
                     .collection("users")
                     .deleteOne({
-                        _id: userId
+                        _id: objectId
                     });
 
-
-            if (
-                result.deletedCount === 0
-            ) {
-
+            if (result.deletedCount === 0) {
                 return res.status(404).json({
                     message:
                         "User not found."
                 });
-
             }
 
+            // ----------------------------
+            // Delete user's habits
+            // ----------------------------
 
             await database
                 .collection("habits")
                 .deleteMany({
-                    userId:
-                        req.params.userId
+                    userId
                 });
 
+            // ----------------------------
+            // Delete user's goals
+            // ----------------------------
 
             await database
                 .collection("goals")
                 .deleteMany({
-                    userId:
-                        req.params.userId
+                    userId
                 });
-
 
             res.json({
                 message:
                     "Account deleted successfully."
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Delete account error:",
                 error
             );
@@ -523,31 +620,42 @@ app.delete(
                 message:
                     "Failed to delete account."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // ADD HABIT
-// ==========================================
+// ============================================================
 
 app.post(
     "/api/habits",
     async (req, res) => {
-
         try {
+            const userId =
+                cleanText(req.body.userId);
 
-            const {
-                userId,
-                name,
-                category,
-                frequency,
-                target
-            } = req.body;
+            const name =
+                cleanText(req.body.name);
 
+            const category =
+                cleanText(req.body.category);
+
+            const frequency =
+                cleanText(req.body.frequency);
+
+            const unit =
+                cleanText(req.body.unit) || "times";
+
+            const target =
+                normalizeNumber(
+                    req.body.target,
+                    1
+                );
+
+            // ----------------------------
+            // Validation
+            // ----------------------------
 
             if (
                 !userId ||
@@ -555,57 +663,57 @@ app.post(
                 !category ||
                 !frequency
             ) {
-
                 return res.status(400).json({
                     message:
                         "Please provide all habit details."
                 });
-
             }
 
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
+
+            // ----------------------------
+            // Create habit
+            // ----------------------------
 
             const habit = {
-
                 userId,
 
-                name:
-                    name.trim(),
+                name,
 
                 category,
 
                 frequency,
 
-                target:
-                    Number(target) || 1,
+                unit,
+
+                target,
 
                 completedDates: [],
 
                 createdAt:
                     new Date()
-
             };
-
 
             const result =
                 await database
                     .collection("habits")
                     .insertOne(habit);
 
-
             res.status(201).json({
-
                 message:
                     "Habit saved successfully.",
 
                 habitId:
-                    result.insertedId
-
+                    result.insertedId.toString()
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Add habit error:",
                 error
             );
@@ -614,36 +722,34 @@ app.post(
                 message:
                     "Failed to save habit."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // GET HABITS
-// ==========================================
+// ============================================================
 
 app.get(
     "/api/habits",
     async (req, res) => {
-
         try {
-
             const userId =
-                req.query.userId;
-
+                cleanText(req.query.userId);
 
             if (!userId) {
-
                 return res.status(400).json({
                     message:
                         "User ID is required."
                 });
-
             }
 
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
 
             const habits =
                 await database
@@ -656,13 +762,10 @@ app.get(
                     })
                     .toArray();
 
-
             res.json(habits);
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Get habits error:",
                 error
             );
@@ -671,106 +774,123 @@ app.get(
                 message:
                     "Failed to get habits."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // EDIT HABIT
-// ==========================================
+// ============================================================
 
 app.put(
     "/api/habits/:id",
     async (req, res) => {
-
         try {
-
             const habitId =
-                new ObjectId(
-                    req.params.id
+                req.params.id;
+
+            const userId =
+                cleanText(req.body.userId);
+
+            const name =
+                cleanText(req.body.name);
+
+            const category =
+                cleanText(req.body.category);
+
+            const frequency =
+                cleanText(req.body.frequency);
+
+            const unit =
+                cleanText(req.body.unit) || "times";
+
+            const target =
+                normalizeNumber(
+                    req.body.target,
+                    1
                 );
 
+            // ----------------------------
+            // Validation
+            // ----------------------------
 
-            const {
-                userId,
-                name,
-                category,
-                frequency,
-                target
-            } = req.body;
+            if (!isValidObjectId(habitId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid habit ID."
+                });
+            }
 
+            if (!userId) {
+                return res.status(400).json({
+                    message:
+                        "User ID is required."
+                });
+            }
+
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
 
             if (
-                !userId ||
                 !name ||
                 !category ||
                 !frequency
             ) {
-
                 return res.status(400).json({
                     message:
                         "Please provide all habit details."
                 });
-
             }
 
+            // ----------------------------
+            // Update habit
+            // ----------------------------
 
             const result =
                 await database
                     .collection("habits")
                     .updateOne(
-
                         {
-                            _id: habitId,
+                            _id:
+                                getObjectId(
+                                    habitId
+                                ),
+
                             userId
                         },
-
                         {
                             $set: {
-
-                                name:
-                                    name.trim(),
-
+                                name,
                                 category,
-
                                 frequency,
-
-                                target:
-                                    Number(target) || 1,
-
+                                unit,
+                                target,
                                 updatedAt:
                                     new Date()
-
                             }
                         }
-
                     );
-
 
             if (
                 result.matchedCount === 0
             ) {
-
                 return res.status(404).json({
                     message:
                         "Habit not found."
                 });
-
             }
-
 
             res.json({
                 message:
                     "Habit updated successfully."
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Edit habit error:",
                 error
             );
@@ -779,76 +899,73 @@ app.put(
                 message:
                     "Failed to update habit."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // DELETE HABIT
-// ==========================================
+// ============================================================
 
 app.delete(
     "/api/habits/:id",
     async (req, res) => {
-
         try {
-
             const habitId =
-                new ObjectId(
-                    req.params.id
-                );
+                req.params.id;
 
             const userId =
-                req.query.userId;
+                cleanText(req.query.userId);
 
+            if (!isValidObjectId(habitId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid habit ID."
+                });
+            }
 
             if (!userId) {
-
                 return res.status(400).json({
                     message:
                         "User ID is required."
                 });
-
             }
 
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
 
             const result =
                 await database
                     .collection("habits")
                     .deleteOne({
-
                         _id:
-                            habitId,
+                            getObjectId(
+                                habitId
+                            ),
 
                         userId
-
                     });
-
 
             if (
                 result.deletedCount === 0
             ) {
-
                 return res.status(404).json({
                     message:
                         "Habit not found."
                 });
-
             }
-
 
             res.json({
                 message:
                     "Habit deleted successfully."
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Delete habit error:",
                 error
             );
@@ -857,241 +974,281 @@ app.delete(
                 message:
                     "Failed to delete habit."
             });
-
         }
-
     }
 );
 
+// ============================================================
+// COMPLETE / UNCOMPLETE HABIT
+//
+// Supports BOTH:
+// POST /api/habits/:id/complete
+// PUT  /api/habits/:id/complete
+//
+// This keeps compatibility with the current frontend.
+// ============================================================
 
-// ==========================================
-// COMPLETE HABIT
-// ==========================================
+async function completeHabit(
+    req,
+    res
+) {
+    try {
+        const habitId =
+            req.params.id;
 
-app.put(
-    "/api/habits/:id/complete",
-    async (req, res) => {
+        const userId =
+            cleanText(req.body.userId);
 
-        try {
+        if (!isValidObjectId(habitId)) {
+            return res.status(400).json({
+                message:
+                    "Invalid habit ID."
+            });
+        }
 
-            const habitId =
-                new ObjectId(
-                    req.params.id
-                );
+        if (!userId) {
+            return res.status(400).json({
+                message:
+                    "User ID is required."
+            });
+        }
 
-            const {
-                userId
-            } = req.body;
+        if (!isValidObjectId(userId)) {
+            return res.status(400).json({
+                message:
+                    "Invalid user ID."
+            });
+        }
 
+        // ----------------------------
+        // Find habit
+        // ----------------------------
 
-            if (!userId) {
+        const habit =
+            await database
+                .collection("habits")
+                .findOne({
+                    _id:
+                        getObjectId(
+                            habitId
+                        ),
 
-                return res.status(400).json({
-                    message:
-                        "User ID is required."
+                    userId
                 });
 
-            }
+        if (!habit) {
+            return res.status(404).json({
+                message:
+                    "Habit not found."
+            });
+        }
 
+        // ----------------------------
+        // Today's date
+        // ----------------------------
 
-            const habit =
-                await database
-                    .collection("habits")
-                    .findOne({
+        // Prefer the date supplied by the browser so completion follows
+        // the user's local calendar. Fall back to India time for compatibility.
+        const suppliedDate = cleanText(req.body.date);
+        const today = /^\d{4}-\d{2}-\d{2}$/.test(suppliedDate)
+            ? suppliedDate
+            : new Intl.DateTimeFormat("en-CA", {
+                timeZone: "Asia/Kolkata",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            }).format(new Date());
 
+        const completedDates =
+            Array.isArray(
+                habit.completedDates
+            )
+                ? habit.completedDates
+                : [];
+
+        const alreadyCompleted =
+            completedDates.includes(
+                today
+            );
+
+        // ----------------------------
+        // Toggle completion
+        // ----------------------------
+
+        if (alreadyCompleted) {
+            await database
+                .collection("habits")
+                .updateOne(
+                    {
                         _id:
-                            habitId,
+                            getObjectId(
+                                habitId
+                            ),
 
                         userId
-
-                    });
-
-
-            if (!habit) {
-
-                return res.status(404).json({
-                    message:
-                        "Habit not found."
-                });
-
-            }
-
-
-            const today =
-                new Date()
-                    .toISOString()
-                    .split("T")[0];
-
-
-            const completedDates =
-                habit.completedDates || [];
-
-
-            const alreadyCompleted =
-                completedDates
-                    .includes(today);
-
-
-            if (alreadyCompleted) {
-
-                await database
-                    .collection("habits")
-                    .updateOne(
-
-                        {
-                            _id:
-                                habitId,
-
-                            userId
+                    },
+                    {
+                        $pull: {
+                            completedDates:
+                                today
                         },
 
-                        {
-                            $pull: {
-                                completedDates:
-                                    today
-                            }
+                        $set: {
+                            updatedAt:
+                                new Date()
                         }
+                    }
+                );
+        } else {
+            await database
+                .collection("habits")
+                .updateOne(
+                    {
+                        _id:
+                            getObjectId(
+                                habitId
+                            ),
 
-                    );
-
-            } else {
-
-                await database
-                    .collection("habits")
-                    .updateOne(
-
-                        {
-                            _id:
-                                habitId,
-
-                            userId
+                        userId
+                    },
+                    {
+                        $addToSet: {
+                            completedDates:
+                                today
                         },
 
-                        {
-                            $addToSet: {
-                                completedDates:
-                                    today
-                            }
+                        $set: {
+                            updatedAt:
+                                new Date()
                         }
+                    }
+                );
+        }
 
-                    );
+        // ----------------------------
+        // Response
+        // ----------------------------
 
-            }
-
-
-            res.json({
-
-                message:
-                    alreadyCompleted
+        res.json({
+            message:
+                alreadyCompleted
                     ? "Habit marked incomplete."
                     : "Habit completed.",
 
-                completed:
-                    !alreadyCompleted,
+            completed:
+                !alreadyCompleted,
 
-                date:
-                    today
+            date:
+                today
+        });
 
-            });
+    } catch (error) {
+        console.error(
+            "Complete habit error:",
+            error
+        );
 
-
-        } catch (error) {
-
-            console.log(
-                "Complete habit error:",
-                error
-            );
-
-            res.status(500).json({
-                message:
-                    "Failed to update habit."
-            });
-
-        }
-
+        res.status(500).json({
+            message:
+                "Failed to update habit."
+        });
     }
+}
+
+// Current frontend compatibility
+app.post(
+    "/api/habits/:id/complete",
+    completeHabit
 );
 
+// REST-compatible method
+app.put(
+    "/api/habits/:id/complete",
+    completeHabit
+);
 
-// ==========================================
+// ============================================================
 // ADD GOAL
-// ==========================================
+// ============================================================
 
 app.post(
     "/api/goals",
     async (req, res) => {
-
         try {
+            const userId =
+                cleanText(req.body.userId);
 
-            const {
-                userId,
-                title,
-                description,
-                target
-            } = req.body;
+            const title =
+                cleanText(req.body.title);
 
+            const description =
+                cleanText(
+                    req.body.description
+                );
+
+            const target =
+                normalizeNumber(
+                    req.body.target,
+                    1
+                );
+
+            // ----------------------------
+            // Validation
+            // ----------------------------
 
             if (
                 !userId ||
-                !title ||
-                !target
+                !title
             ) {
-
                 return res.status(400).json({
                     message:
                         "Please provide goal title and target."
                 });
-
             }
 
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
+
+            // ----------------------------
+            // Create goal
+            // ----------------------------
 
             const goal = {
-
                 userId,
 
-                title:
-                    title.trim(),
+                title,
 
-                description:
-                    description
-                    ? description.trim()
-                    : "",
+                description,
 
-                target:
-                    Number(target) || 1,
+                target,
 
-                progress:
-                    0,
+                progress: 0,
 
-                completed:
-                    false,
+                completed: false,
 
                 createdAt:
                     new Date()
-
             };
-
 
             const result =
                 await database
                     .collection("goals")
                     .insertOne(goal);
 
-
             res.status(201).json({
-
                 message:
                     "Goal created successfully.",
 
                 goalId:
-                    result.insertedId
-
+                    result.insertedId.toString()
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Add goal error:",
                 error
             );
@@ -1100,36 +1257,34 @@ app.post(
                 message:
                     "Failed to create goal."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // GET GOALS
-// ==========================================
+// ============================================================
 
 app.get(
     "/api/goals",
     async (req, res) => {
-
         try {
-
             const userId =
-                req.query.userId;
-
+                cleanText(req.query.userId);
 
             if (!userId) {
-
                 return res.status(400).json({
                     message:
                         "User ID is required."
                 });
-
             }
 
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
 
             const goals =
                 await database
@@ -1142,13 +1297,10 @@ app.get(
                     })
                     .toArray();
 
-
             res.json(goals);
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Get goals error:",
                 error
             );
@@ -1157,117 +1309,132 @@ app.get(
                 message:
                     "Failed to get goals."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // INCREASE GOAL PROGRESS
-// ==========================================
+// ============================================================
 
 app.put(
     "/api/goals/:id/progress",
     async (req, res) => {
-
         try {
-
             const goalId =
-                new ObjectId(
-                    req.params.id
-                );
+                req.params.id;
 
-            const {
-                userId
-            } = req.body;
+            const userId =
+                cleanText(req.body.userId);
 
+            if (!isValidObjectId(goalId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid goal ID."
+                });
+            }
 
             if (!userId) {
-
                 return res.status(400).json({
                     message:
                         "User ID is required."
                 });
-
             }
 
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
+
+            // ----------------------------
+            // Find goal
+            // ----------------------------
 
             const goal =
                 await database
                     .collection("goals")
                     .findOne({
-
                         _id:
-                            goalId,
+                            getObjectId(
+                                goalId
+                            ),
 
                         userId
-
                     });
 
-
             if (!goal) {
-
                 return res.status(404).json({
                     message:
                         "Goal not found."
                 });
-
             }
 
+            // ----------------------------
+            // Calculate progress
+            // ----------------------------
+
+            const target =
+                normalizeNumber(
+                    goal.target,
+                    1
+                );
+
+            const currentProgress =
+                Number(
+                    goal.progress || 0
+                );
 
             const newProgress =
                 Math.min(
-                    Number(goal.target),
-                    Number(goal.progress || 0) + 1
+                    target,
+                    currentProgress + 1
                 );
 
+            const completed =
+                newProgress >= target;
+
+            // ----------------------------
+            // Update goal
+            // ----------------------------
 
             await database
                 .collection("goals")
                 .updateOne(
-
                     {
                         _id:
-                            goalId,
+                            getObjectId(
+                                goalId
+                            ),
 
                         userId
                     },
-
                     {
                         $set: {
-
                             progress:
                                 newProgress,
 
-                            completed:
-                                newProgress >=
-                                Number(goal.target),
+                            completed,
 
                             updatedAt:
                                 new Date()
-
                         }
                     }
-
                 );
 
-
             res.json({
-
                 message:
                     "Goal progress updated.",
 
                 progress:
-                    newProgress
+                    newProgress,
 
+                completed
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Goal progress error:",
                 error
             );
@@ -1276,76 +1443,73 @@ app.put(
                 message:
                     "Failed to update goal."
             });
-
         }
-
     }
 );
 
-
-// ==========================================
+// ============================================================
 // DELETE GOAL
-// ==========================================
+// ============================================================
 
 app.delete(
     "/api/goals/:id",
     async (req, res) => {
-
         try {
-
             const goalId =
-                new ObjectId(
-                    req.params.id
-                );
+                req.params.id;
 
             const userId =
-                req.query.userId;
+                cleanText(req.query.userId);
 
+            if (!isValidObjectId(goalId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid goal ID."
+                });
+            }
 
             if (!userId) {
-
                 return res.status(400).json({
                     message:
                         "User ID is required."
                 });
-
             }
 
+            if (!isValidObjectId(userId)) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user ID."
+                });
+            }
 
             const result =
                 await database
                     .collection("goals")
                     .deleteOne({
-
                         _id:
-                            goalId,
+                            getObjectId(
+                                goalId
+                            ),
 
                         userId
-
                     });
-
 
             if (
                 result.deletedCount === 0
             ) {
-
                 return res.status(404).json({
                     message:
                         "Goal not found."
                 });
-
             }
-
 
             res.json({
                 message:
                     "Goal deleted successfully."
             });
 
-
         } catch (error) {
-
-            console.log(
+            console.error(
                 "Delete goal error:",
                 error
             );
@@ -1354,20 +1518,57 @@ app.delete(
                 message:
                     "Failed to delete goal."
             });
-
         }
-
     }
 );
 
+// ============================================================
+// GLOBAL ERROR HANDLER
+// ============================================================
 
-// ==========================================
+app.use(
+    (error, req, res, next) => {
+        console.error(
+            "Unhandled server error:",
+            error
+        );
+
+        res.status(500).json({
+            message:
+                "An unexpected server error occurred."
+        });
+    }
+);
+
+// ============================================================
 // START SERVER
-// ==========================================
+// ============================================================
 
-const PORT = process.env.PORT || 5000;
+const PORT =
+    process.env.PORT || 5000;
 
-app.listen(PORT, "0.0.0.0", async () => {
-    console.log(`HabitForge API running on port ${PORT}`);
-    await connectDatabase();
-});
+async function startServer() {
+    try {
+        await connectDatabase();
+
+        app.listen(
+            PORT,
+            "0.0.0.0",
+            () => {
+                console.log(
+                    `HabitForge API running on port ${PORT}`
+                );
+            }
+        );
+
+    } catch (error) {
+        console.error(
+            "Server startup failed:",
+            error
+        );
+
+        process.exit(1);
+    }
+}
+
+startServer();
